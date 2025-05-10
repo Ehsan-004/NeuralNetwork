@@ -15,5 +15,17 @@ def tanh(x):
 def ReLU(x):
     return max(0, x)
 
+
+def softmax(X): 
+    s = sum(list(map(lambda i: np.exp(i), X)))
+    result = []
+    for i in X:
+        result.append((np.exp(i))/s)
+        
+    return list(map(lambda i: float(i), result))
+        
+
+
 if __name__ == "__main__":
     print(sigmoid(3))
+    print(softmax([2,2]))
