@@ -25,7 +25,6 @@ def softmax(X):
     return list(map(lambda i: float(i), result))
         
 
-
 if __name__ == "__main__":
     print(sigmoid(3))
     print(softmax([2,2]))
