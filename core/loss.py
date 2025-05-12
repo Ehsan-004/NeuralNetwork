@@ -8,5 +8,8 @@ def sqe(y: list, y_hat: list):
     return s
     
 
+def msq(y, y_hat):
+    return sqe(y, y_hat) / len(y)
+
 
 print(sqe([1,2,3], [2,4,6]))
