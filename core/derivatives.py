@@ -18,18 +18,21 @@ def ReLU(a):
     return 0 if a<0 else 1
 
 
-def d_sqe_w(x, y_predicted, y_hat):
-    result = 0
-    for i in range(len(x)):
-        result += (y_hat[i]-y_predicted[i]) * x[i]
-    return (-2) * result/len(x)
+def d_l_w_linear(x, y_predicted, y_true):
+    return -2 * ((sum((y_true - y_predicted) * x))/len(y_true))
 
 
-def d_sqe_b(x, y_predicted, y_hat):
-    result = 0
-    for i in range(len(x)):
-        result += (y_hat[i]-y_predicted[i])
-    return (-2) * result/len(x)
+def d_l_b_linear(y_predicted, y_true):
+    return -2 * ((sum(y_true - y_predicted)) / len(y_true))
+
+
+def dl_w1_linear_i(xs: list, class_predicted, true_class, weight_number, loss_function):
+    """
+    derivative of loss with respect to weight number weight number
+    """
+    a = loss_function()
+    return -2 * sum((true_class - class_predicted))
+    
 
 
 if __name__ == "__main__":

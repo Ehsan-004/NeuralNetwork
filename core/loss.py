@@ -8,8 +8,15 @@ def sqe(y: list, y_hat: list):
     return s
     
 
-def msq(y, y_hat):
-    return sqe(y, y_hat) / len(y)
+def msq(y_true , y_predicted):
+    return (sum((y_true - y_predicted)**2)) / len(y_true)
 
 
-print(sqe([1,2,3], [2,4,6]))
+def calculate_mse(predictions, targets):
+    mse = sum((p - t) ** 2 for p, t in zip(predictions, targets)) / len(targets)
+    return mse
+
+
+if __name__ == "__main__":
+    print(calculate_mse([1,2,3], [2,4,6]))
+    print(msq([1,2,3], [2,4,6]))
