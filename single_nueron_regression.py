@@ -5,12 +5,8 @@ from core.loss import msq
 from core.tools import initialize_weights, generate_linear_sequence
 
 
-
 def forward(weight, x, bias, activation):
     return activation(weight * x + bias)
-
-
-
 
 
 def linear_regressor(dataset, epochs=120000, learning_rate = 0.0001):

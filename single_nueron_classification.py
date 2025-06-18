@@ -7,9 +7,6 @@ from math import ceil, floor
 from core.tools import initialize_weights, linear_classified_data_generator
 
 
-
-
-
 def forward(weight1, weight2,  x1, x2, bias, activation):
     return activation(weight1*x1 + weight2*x2 + bias)
 
@@ -53,29 +50,17 @@ def linear_classification(dataset, epochs=500, learning_rate = 0.001):
     x2_batch = dataset["x2"]
     classes = dataset["class"]
     
-    # print(len(x1_batch))
-    # print(len(x2_batch))
-    
     class_batch = list(dataset["class"])
    
     print("starting training")
    
     for epoch in range(epochs):
         output = forward(w1, w2, np.array(x1_batch), np.array(x2_batch), b, sigmoid)
-        # print(output[:5])
         dl_dws = dl_dw_linear([x1_batch, x2_batch], [w1, w2], output, class_batch, sigmoid, b)
         dl_dbs = dl_db_linear([x1_batch, x2_batch], [w1, w2], output, class_batch, sigmoid, b)
-        # print(f"derivatives in epoch {epoch}")
-        # print(f"dl_dw1 = {dl_dws[0]}")
-        # print(f"dl_dw2 = {dl_dws[1]}")
-        # print(f"dl_db = {dl_dbs}")
         w1 -= learning_rate * dl_dws[0]
         w2 -= learning_rate * dl_dws[1]
         b -= learning_rate * dl_dbs
-        # print()
-        # print(f"new w1 = {w1}")
-        # print(f"new w2 = {w2}")
-        # print(f"new b = {b}")
         
         loss = msq(classes, output)
         
@@ -96,16 +81,6 @@ def predict_class(x1, x2, w1, w2, b, threshold=0.5):
 
 
 if __name__ == "__main__":
-    
-    # ws = [0.1, 0.4]
-    # bis = 1
-    # x = [[1,2,3,4], [5,6,7,8]]
-    # y = [0,1,1,0]
-    # f = [1,1,1,1]
-    # print(dl_dw_linear(x, ws, f, y, sigmoid, bis))
-        
-    # print(forward(2, 3, np.array([1,2,3]), np.array([4,5,6]), 5, sigmoid))
-        
     dataset = linear_classified_data_generator(slope=3, intercept=5, plot=True)
     dataset["class"] = dataset["class"].astype(int)
     
