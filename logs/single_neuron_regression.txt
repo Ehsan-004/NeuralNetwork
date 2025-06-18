@@ -1,0 +1,135 @@
+Initial w = 0.1009
+Initial b = 0.1500
+Epoch 1/120000, Loss: 12366.16267731, Current w: 1.394618, Current b: 0.169314
+Epoch 1000/120000, Loss: 0.15062672, Current w: 2.011673, Current b: 0.217967
+Epoch 2000/120000, Loss: 0.13649893, Current w: 2.011112, Current b: 0.255545
+Epoch 3000/120000, Loss: 0.12369624, Current w: 2.010578, Current b: 0.291317
+Epoch 4000/120000, Loss: 0.11209435, Current w: 2.010070, Current b: 0.325370
+Epoch 5000/120000, Loss: 0.10158064, Current w: 2.009586, Current b: 0.357786
+Epoch 6000/120000, Loss: 0.09205305, Current w: 2.009125, Current b: 0.388645
+Epoch 7000/120000, Loss: 0.08341908, Current w: 2.008687, Current b: 0.418022
+Epoch 8000/120000, Loss: 0.07559492, Current w: 2.008269, Current b: 0.445986
+Epoch 9000/120000, Loss: 0.06850462, Current w: 2.007872, Current b: 0.472607
+Epoch 10000/120000, Loss: 0.06207934, Current w: 2.007494, Current b: 0.497949
+Epoch 11000/120000, Loss: 0.05625671, Current w: 2.007134, Current b: 0.522073
+Epoch 12000/120000, Loss: 0.05098020, Current w: 2.006791, Current b: 0.545038
+Epoch 13000/120000, Loss: 0.04619859, Current w: 2.006465, Current b: 0.566900
+Epoch 14000/120000, Loss: 0.04186547, Current w: 2.006154, Current b: 0.587711
+Epoch 15000/120000, Loss: 0.03793877, Current w: 2.005858, Current b: 0.607522
+Epoch 16000/120000, Loss: 0.03438036, Current w: 2.005577, Current b: 0.626381
+Epoch 17000/120000, Loss: 0.03115571, Current w: 2.005309, Current b: 0.644334
+Epoch 18000/120000, Loss: 0.02823351, Current w: 2.005054, Current b: 0.661424
+Epoch 19000/120000, Loss: 0.02558540, Current w: 2.004811, Current b: 0.677693
+Epoch 20000/120000, Loss: 0.02318565, Current w: 2.004580, Current b: 0.693180
+Epoch 21000/120000, Loss: 0.02101099, Current w: 2.004360, Current b: 0.707923
+Epoch 22000/120000, Loss: 0.01904030, Current w: 2.004150, Current b: 0.721958
+Epoch 23000/120000, Loss: 0.01725445, Current w: 2.003951, Current b: 0.735318
+Epoch 24000/120000, Loss: 0.01563609, Current w: 2.003761, Current b: 0.748036
+Epoch 25000/120000, Loss: 0.01416953, Current w: 2.003580, Current b: 0.760143
+Epoch 26000/120000, Loss: 0.01284052, Current w: 2.003408, Current b: 0.771669
+Epoch 27000/120000, Loss: 0.01163617, Current w: 2.003244, Current b: 0.782640
+Epoch 28000/120000, Loss: 0.01054477, Current w: 2.003089, Current b: 0.793085
+Epoch 29000/120000, Loss: 0.00955574, Current w: 2.002940, Current b: 0.803027
+Epoch 30000/120000, Loss: 0.00865948, Current w: 2.002799, Current b: 0.812492
+Epoch 31000/120000, Loss: 0.00784728, Current w: 2.002664, Current b: 0.821502
+Epoch 32000/120000, Loss: 0.00711125, Current w: 2.002536, Current b: 0.830079
+Epoch 33000/120000, Loss: 0.00644426, Current w: 2.002414, Current b: 0.838244
+Epoch 34000/120000, Loss: 0.00583983, Current w: 2.002298, Current b: 0.846016
+Epoch 35000/120000, Loss: 0.00529210, Current w: 2.002188, Current b: 0.853416
+Epoch 36000/120000, Loss: 0.00479573, Current w: 2.002083, Current b: 0.860459
+Epoch 37000/120000, Loss: 0.00434593, Current w: 2.001983, Current b: 0.867164
+Epoch 38000/120000, Loss: 0.00393831, Current w: 2.001887, Current b: 0.873547
+Epoch 39000/120000, Loss: 0.00356892, Current w: 2.001797, Current b: 0.879623
+Epoch 40000/120000, Loss: 0.00323418, Current w: 2.001710, Current b: 0.885408
+Epoch 41000/120000, Loss: 0.00293083, Current w: 2.001628, Current b: 0.890914
+Epoch 42000/120000, Loss: 0.00265594, Current w: 2.001550, Current b: 0.896156
+Epoch 43000/120000, Loss: 0.00240683, Current w: 2.001476, Current b: 0.901145
+Epoch 44000/120000, Loss: 0.00218109, Current w: 2.001405, Current b: 0.905895
+Epoch 45000/120000, Loss: 0.00197651, Current w: 2.001337, Current b: 0.910417
+Epoch 46000/120000, Loss: 0.00179113, Current w: 2.001273, Current b: 0.914722
+Epoch 47000/120000, Loss: 0.00162313, Current w: 2.001212, Current b: 0.918820
+Epoch 48000/120000, Loss: 0.00147090, Current w: 2.001154, Current b: 0.922720
+Epoch 49000/120000, Loss: 0.00133294, Current w: 2.001098, Current b: 0.926434
+Epoch 50000/120000, Loss: 0.00120791, Current w: 2.001045, Current b: 0.929969
+Epoch 51000/120000, Loss: 0.00109462, Current w: 2.000995, Current b: 0.933334
+Epoch 52000/120000, Loss: 0.00099195, Current w: 2.000947, Current b: 0.936537
+Epoch 53000/120000, Loss: 0.00089891, Current w: 2.000902, Current b: 0.939587
+Epoch 54000/120000, Loss: 0.00081460, Current w: 2.000858, Current b: 0.942490
+Epoch 55000/120000, Loss: 0.00073820, Current w: 2.000817, Current b: 0.945253
+Epoch 56000/120000, Loss: 0.00066896, Current w: 2.000778, Current b: 0.947884
+Epoch 57000/120000, Loss: 0.00060622, Current w: 2.000741, Current b: 0.950388
+Epoch 58000/120000, Loss: 0.00054936, Current w: 2.000705, Current b: 0.952772
+Epoch 59000/120000, Loss: 0.00049783, Current w: 2.000671, Current b: 0.955041
+Epoch 60000/120000, Loss: 0.00045114, Current w: 2.000639, Current b: 0.957202
+Epoch 61000/120000, Loss: 0.00040882, Current w: 2.000608, Current b: 0.959258
+Epoch 62000/120000, Loss: 0.00037048, Current w: 2.000579, Current b: 0.961216
+Epoch 63000/120000, Loss: 0.00033573, Current w: 2.000551, Current b: 0.963079
+Epoch 64000/120000, Loss: 0.00030424, Current w: 2.000525, Current b: 0.964853
+Epoch 65000/120000, Loss: 0.00027570, Current w: 2.000499, Current b: 0.966542
+Epoch 66000/120000, Loss: 0.00024985, Current w: 2.000475, Current b: 0.968150
+Epoch 67000/120000, Loss: 0.00022641, Current w: 2.000453, Current b: 0.969680
+Epoch 68000/120000, Loss: 0.00020518, Current w: 2.000431, Current b: 0.971137
+Epoch 69000/120000, Loss: 0.00018593, Current w: 2.000410, Current b: 0.972524
+Epoch 70000/120000, Loss: 0.00016849, Current w: 2.000390, Current b: 0.973844
+Epoch 71000/120000, Loss: 0.00015269, Current w: 2.000372, Current b: 0.975101
+Epoch 72000/120000, Loss: 0.00013837, Current w: 2.000354, Current b: 0.976298
+Epoch 73000/120000, Loss: 0.00012539, Current w: 2.000337, Current b: 0.977437
+Epoch 74000/120000, Loss: 0.00011363, Current w: 2.000321, Current b: 0.978521
+Epoch 75000/120000, Loss: 0.00010297, Current w: 2.000305, Current b: 0.979553
+Epoch 76000/120000, Loss: 0.00009331, Current w: 2.000291, Current b: 0.980535
+Epoch 77000/120000, Loss: 0.00008456, Current w: 2.000277, Current b: 0.981471
+Epoch 78000/120000, Loss: 0.00007663, Current w: 2.000263, Current b: 0.982361
+Epoch 79000/120000, Loss: 0.00006944, Current w: 2.000251, Current b: 0.983209
+Epoch 80000/120000, Loss: 0.00006293, Current w: 2.000239, Current b: 0.984015
+Epoch 81000/120000, Loss: 0.00005703, Current w: 2.000227, Current b: 0.984784
+Epoch 82000/120000, Loss: 0.00005168, Current w: 2.000216, Current b: 0.985515
+Epoch 83000/120000, Loss: 0.00004683, Current w: 2.000206, Current b: 0.986211
+Epoch 84000/120000, Loss: 0.00004244, Current w: 2.000196, Current b: 0.986873
+Epoch 85000/120000, Loss: 0.00003846, Current w: 2.000187, Current b: 0.987504
+Epoch 86000/120000, Loss: 0.00003485, Current w: 2.000178, Current b: 0.988105
+Epoch 87000/120000, Loss: 0.00003158, Current w: 2.000169, Current b: 0.988676
+Epoch 88000/120000, Loss: 0.00002862, Current w: 2.000161, Current b: 0.989220
+Epoch 89000/120000, Loss: 0.00002594, Current w: 2.000153, Current b: 0.989738
+Epoch 90000/120000, Loss: 0.00002350, Current w: 2.000146, Current b: 0.990231
+Epoch 91000/120000, Loss: 0.00002130, Current w: 2.000139, Current b: 0.990701
+Epoch 92000/120000, Loss: 0.00001930, Current w: 2.000132, Current b: 0.991148
+Epoch 93000/120000, Loss: 0.00001749, Current w: 2.000126, Current b: 0.991573
+Epoch 94000/120000, Loss: 0.00001585, Current w: 2.000120, Current b: 0.991978
+Epoch 95000/120000, Loss: 0.00001436, Current w: 2.000114, Current b: 0.992363
+Epoch 96000/120000, Loss: 0.00001302, Current w: 2.000109, Current b: 0.992730
+Epoch 97000/120000, Loss: 0.00001180, Current w: 2.000103, Current b: 0.993080
+Epoch 98000/120000, Loss: 0.00001069, Current w: 2.000098, Current b: 0.993412
+Epoch 99000/120000, Loss: 0.00000969, Current w: 2.000094, Current b: 0.993729
+Epoch 100000/120000, Loss: 0.00000878, Current w: 2.000089, Current b: 0.994030
+Epoch 101000/120000, Loss: 0.00000795, Current w: 2.000085, Current b: 0.994317
+Epoch 102000/120000, Loss: 0.00000721, Current w: 2.000081, Current b: 0.994590
+Epoch 103000/120000, Loss: 0.00000653, Current w: 2.000077, Current b: 0.994850
+Epoch 104000/120000, Loss: 0.00000592, Current w: 2.000073, Current b: 0.995097
+Epoch 105000/120000, Loss: 0.00000536, Current w: 2.000070, Current b: 0.995333
+Epoch 106000/120000, Loss: 0.00000486, Current w: 2.000066, Current b: 0.995557
+Epoch 107000/120000, Loss: 0.00000441, Current w: 2.000063, Current b: 0.995771
+Epoch 108000/120000, Loss: 0.00000399, Current w: 2.000060, Current b: 0.995974
+Epoch 109000/120000, Loss: 0.00000362, Current w: 2.000057, Current b: 0.996167
+Epoch 110000/120000, Loss: 0.00000328, Current w: 2.000054, Current b: 0.996352
+Epoch 111000/120000, Loss: 0.00000297, Current w: 2.000052, Current b: 0.996527
+Epoch 112000/120000, Loss: 0.00000269, Current w: 2.000049, Current b: 0.996694
+Epoch 113000/120000, Loss: 0.00000244, Current w: 2.000047, Current b: 0.996853
+Epoch 114000/120000, Loss: 0.00000221, Current w: 2.000045, Current b: 0.997004
+Epoch 115000/120000, Loss: 0.00000200, Current w: 2.000043, Current b: 0.997148
+Epoch 116000/120000, Loss: 0.00000182, Current w: 2.000041, Current b: 0.997285
+Epoch 117000/120000, Loss: 0.00000165, Current w: 2.000039, Current b: 0.997415
+Epoch 118000/120000, Loss: 0.00000149, Current w: 2.000037, Current b: 0.997540
+Epoch 119000/120000, Loss: 0.00000135, Current w: 2.000035, Current b: 0.997658
+Epoch 120000/120000, Loss: 0.00000122, Current w: 2.000033, Current b: 0.997770
+
+ --- Training Finished ---
+Final w = 2.000033
+Final b = 0.997770
+
+ --- Testing the model ---
+
+Actual Y for x=40: 81
+Model predict for x=40: 80.99910156374625
+
+Actual Y for x=75: 151
+Model predict for x=75: 151.00026641367702

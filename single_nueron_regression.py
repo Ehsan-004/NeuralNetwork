@@ -2,27 +2,19 @@ import numpy as np
 from core.activations import linear
 from core.derivatives import d_l_b_linear, d_l_w_linear
 from core.loss import msq
+from core.tools import initialize_weights, generate_linear_sequence
 
-
-
-def initialize_weights():
-    return np.random.randn() * 0.1, np.random.randn() * 0.1 
 
 
 def forward(weight, x, bias, activation):
     return activation(weight * x + bias)
 
 
-def generate_linear_sequence(w, b, s, l):
-    sequence = []
-    for i in range(s, s + l):
-        value = w * i + b
-        sequence.append(value)
-    return np.array(sequence)
+
 
 
 def linear_regressor(dataset, epochs=120000, learning_rate = 0.0001):
-    w, b = initialize_weights()
+    w, b = initialize_weights(2)
     print(f"Initial w = {w:.4f}")
     print(f"Initial b = {b:.4f}")
             
