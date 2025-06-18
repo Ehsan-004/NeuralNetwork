@@ -12,15 +12,15 @@ def tanh(x):
     (1+np.exp((-2)*(x))) / (1-np.exp((-2)*(x)))
 
 
-def ReLU(x):
-    return max(0, x)
+def ReLU(x: list):
+    m = [max(0, i) for i in x]
+    return m
 
 
 def softmax(X): 
     s = sum(list(map(lambda i: np.exp(i), X)))
-    result = []
-    for i in X:
-        result.append((np.exp(i))/s)
+    
+    result = [(np.exp(i))/s for i in X]
         
     return list(map(lambda i: float(i), result))
         
