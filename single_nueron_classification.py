@@ -3,11 +3,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from core.activations import sigmoid
 from core.loss import msq
+from math import ceil, floor
 
 
+# This function is created by chatGPT
 def random_data_generator(plot = False):
 
-    n_samples = 10000
+    n_samples = 30000
 
     x_min, x_max = -10, 10
     y_min, y_max = -10, 30
@@ -23,6 +25,7 @@ def random_data_generator(plot = False):
     data = np.column_stack((X, Y, classes))
 
     df = pd.DataFrame(data, columns=['x1', 'x2', 'class'])
+    df['class'] = df["class"].astype(int)
 
     if plot:
         plt.figure(figsize=(8, 8))
@@ -50,12 +53,6 @@ def initialize_weights():
 
 
 def forward(weight1, weight2,  x1, x2, bias, activation):
-    # a = weight1*x1
-    # b = weight2*x2
-    # print(f"a = {a}")
-    # print(f"b = {b}")
-    # print(f"a+b = {a+b}")
-    # print(activation(19))
     return activation(weight1*x1 + weight2*x2 + bias)
 
 
@@ -66,8 +63,8 @@ def dl_dw_linear(xs: list, weights, class_predicted, true_class, loss_function, 
     """
     dl_ws = []
     for w in range(len(weights)):
+        res = 0
         for j in range(len(xs[0])):
-            res = 0
             error = true_class[j] - class_predicted[j]
             sig = loss_function(weights[0] * xs[0][j] + weights[1] * xs[1][j] + bias)
             x = xs[w][j]
@@ -87,7 +84,7 @@ def dl_db_linear(xs: list, weights, class_predicted, true_class, loss_function, 
     return sum(dl_bs)
 
 
-def linear_classification(dataset, epochs=1000, learning_rate = 0.001):
+def linear_classification(dataset, epochs=500, learning_rate = 0.001):
     w1, w2, b = initialize_weights()
     
     print(f"Initial w1 = {w1:.4f}")
@@ -134,6 +131,16 @@ def linear_classification(dataset, epochs=1000, learning_rate = 0.001):
     print(f"final w1 = {w1}")
     print(f"final w2 = {w2}")
     print(f"final b = {b}")
+    return w1, w2, b
+
+
+
+# This function is created by chatGPT
+def predict_class(x1, x2, w1, w2, b, threshold=0.5):
+    prob = forward(w1, w2, x1, x2, b, sigmoid)
+    predicted_class = 1 if prob >= threshold else 0
+    return prob, predicted_class
+
 
 
 if __name__ == "__main__":
@@ -148,5 +155,33 @@ if __name__ == "__main__":
     # print(forward(2, 3, np.array([1,2,3]), np.array([4,5,6]), 5, sigmoid))
         
     dataset = random_data_generator(plot=False)
+    
+    # train_data_len = int(len(dataset) * 0.8)
+    # train_data = dataset.iloc[:train_data_len]
+    
+    # print(len(train_data))
+    # exit()
+    
     dataset["class"] = dataset["class"].astype(int)
-    linear_classification(dataset)
+    w1, w2, b = linear_classification(dataset)
+
+    print(" --- Testing the model ---")
+    
+
+
+
+    x_test = 2
+    y_test = 1
+    print()
+    print(f"Actual Y for x={x_test} and y={y_test}: under the line")
+    prob, cls = predict_class(x_test, y_test, w1, w2, b)
+    print(f"Predicted class for ({x_test}, {y_test}): {cls}, Probability: {prob:2f}")
+    
+    
+    x_test = -2
+    y_test = 1
+    print()
+    print(f"Actual Y for x={x_test} and y={y_test}: under the line")
+    prob, cls = predict_class(x_test, y_test, w1, w2, b)
+    print(f"Predicted class for ({x_test}, {y_test}): {cls}, Probability: {prob:2f}")
+    
