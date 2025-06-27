@@ -1,7 +1,14 @@
 import numpy as np
 
-def sigmoid(x):
-    return (1) / (1+np.exp(-x))
+
+# def sigmoid(x):
+#     return (1) / (1+np.exp(-np.ndarray(x)))
+
+def sigmoid(X):
+    if isinstance(X, list):
+        return [(1) / (1+np.exp(-x)) for x in X]
+    else:
+        return (1) / (1+np.exp(-X))
 
 
 def linear(x, c=1):
@@ -13,8 +20,10 @@ def tanh(x):
 
 
 def ReLU(x: list):
-    m = [max(0, i) for i in x]
-    return m
+    if isinstance(x, list):
+        return [max(0, i) for i in x]
+    else:
+        return max(0, x)
 
 
 def softmax(X): 

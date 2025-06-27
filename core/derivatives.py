@@ -14,8 +14,14 @@ def linear(c=1):
     return c
 
 
-def ReLU(a):
-    return 0 if a<0 else 1
+# def ReLU(a):
+#     return 0 if a<0 else 1
+def ReLU(A):
+    if isinstance(A, list):
+        return [0 if a<0 else 1 for a in A]
+    else:
+        return 0 if A<0 else 1
+
 
 
 def d_l_w_linear(x, y_predicted, y_true):

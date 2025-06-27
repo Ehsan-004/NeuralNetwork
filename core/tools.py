@@ -19,8 +19,8 @@ def generate_linear_sequence(w, b, s, l):
 
 # This function is created by chatGPT
 def linear_classified_data_generator(slope, intercept, n_samples=30000, plot=False):
-    if n_samples < 1000:
-        n_samples = 1000
+    # if n_samples < 1000:
+    #     n_samples = 1000
 
     x_min, x_max = -10, 10
     y_min, y_max = -10, 30
@@ -53,6 +53,6 @@ def linear_classified_data_generator(slope, intercept, n_samples=30000, plot=Fal
     return df
 
 
-def initialize_weights(num):
-    ws = [np.random.randn() * 0.1 for i in range(num)]
+def initialize_weights(num, w=0.1):
+    ws = [np.random.randn() * w for i in range(num)]
     return ws
