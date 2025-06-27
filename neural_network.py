@@ -1,4 +1,6 @@
-from core.tools import initialize_weights
+from matplotlib import pyplot as plt
+import numpy as np
+from core.tools import initialize_weights, linear_classified_data_generator
 from core.activations import sigmoid, ReLU
 from core.derivatives import sigmoid as d_sigmoid
 from core.derivatives import ReLU as d_ReLU
@@ -36,6 +38,7 @@ class Layer:
         self.activation_differ = activation_differ
         self.landas = [0 for _ in range(len(self.neurons))]
         self.activations = []
+        self.lr = 0.1
     
     
     def forward(self, x):
@@ -48,6 +51,8 @@ class Layer:
     
     
     def compute_pre_landas(self, previous_activations, previous_activation_diff):
+        # pre act diff is a functions
+        # pre acts is a list
         """
         calculates previous layer landas
         """
@@ -60,7 +65,7 @@ class Layer:
         
         for i in range(len(self.neurons)):  # j for current layer neurons
             temp_landa = 0
-            for j in range(len(self.input_neurons)):  # i for previous layer neurons
+            for j in range(self.input_neurons):  # i for previous layer neurons
                 temp_landa += landas[i] * weights[i][j] * previous_activation_diff(previous_activations[j])
             previous_landas.append(temp_landa)
             
@@ -84,7 +89,8 @@ class Layer:
         return gradients
     
     
-    def update_weights(self, gradients, lr=0.01):
+    def update_weights(self, gradients):
+        lr = self.lr
         for i in range(len(self.neurons)):
             for j in range(self.input_neurons):
                 self.neurons[i].input_weigts[j] -= gradients[i][j] * lr
@@ -99,9 +105,11 @@ class Layer:
 
 
 class NeuralNetwork:
-    def __init__(self, layers: list[Layer]):
+    def __init__(self, layers: list[Layer], lr=1):
         self.layers = layers
-         
+        self.lr = lr
+        for l in self.layers:
+            l.lr = lr
         
     def forward(self, x):
         if len(x) != self.layers[0].input_neurons:
@@ -112,14 +120,28 @@ class NeuralNetwork:
         return x
 
 
-    def backward(self):
+    def backward(self, y_true):
         # backward for output layer:
         # TODO ...
+        # for each output neuron:
+        #   landa = -2 * error * activation_diff(neuron activation)
+        
+        output_layer = self.layers[-1]
+        y_pred = output_layer.activations
+        landas = []
+        
+        for i in range(len(y_true)):
+            error = y_true[i] - y_pred[i]
+            d_act = output_layer.activation_differ(y_pred[i])
+            landa = -2 * error * d_act
+            landas.append(landa)
+        
+        output_layer.landas = landas
         
         for i in range(len(self.layers)-2, -1, -1):  # -2 because the last layer is output and is different
             l = self.layers[i]
             l_next = self.layers[i+1]
-            l.landas = self.layers[i+1].compute_pre_landas(l.activation, l.activation_differ)
+            l.landas = l_next.compute_pre_landas(l.activations, l.activation_differ)
             gradients = l.compute_grades(l_next.landas)
             l_next.update_weights(gradients)
             
@@ -159,42 +181,47 @@ if __name__ == "__main__":
     
     # /=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
     
-    l = Layer(2,3, ReLU, d_ReLU)  # next layer has two nuerons
-    l.forward([10, 11])
-    w = [[0.005007011765916471, -0.06692413065941487, -0.02683456361965499],[-0.03470931602341219, 0.0027481619278391808, 0.1626835551191007]]
-    pprint(l.get_weights())
-    l.backward_pass([2,3])
+    # l = Layer(2,3, ReLU, d_ReLU)  # next layer has two nuerons
+    # l.forward([10, 11])
+    # w = [[0.005007011765916471, -0.06692413065941487, -0.02683456361965499],[-0.03470931602341219, 0.0027481619278391808, 0.1626835551191007]]
+    # pprint(l.get_weights())
+    # l.backward_pass([2,3])
     
-
-
-
-
-
-
-def backward_pass(self, next_layer_landas, weights):  # weights from this layer to next layer
-    der = self.activation_differ(self.activations)
+    # /=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
     
-    for i in range(len(self.neurons)):  # for each noruon in this layer 
-        d_activation = der[i]
+    # test part written by Chat GPT:
+    X = [
+        [0, 0],
+        [0, 1],
+        [1, 0],
+        [1, 1],
+    ]
+
+    Y = [
+        [0],
+        [1],
+        [1],
+        [1],
+    ]
+    
+    hidden_layer = Layer(input_neurons=2, neuron_num=4, activation=sigmoid, activation_differ=d_sigmoid)
+    output_layer = Layer(input_neurons=4, neuron_num=1, activation=sigmoid, activation_differ=d_sigmoid)
+
+    net = NeuralNetwork([hidden_layer, output_layer])
+
+    for epoch in range(60000):
+        total_loss = 0
+        for x, y_true in zip(X, Y):
+            y_pred = net(x)
+            net.backward(y_true)
+            loss = sum([(y_true[i] - y_pred[i]) ** 2 for i in range(len(y_true))])
+            total_loss += loss
+        if epoch % 100 == 0:
+            print(f"Epoch {epoch}, Loss: {total_loss:.4f}")
+
+    for x in X:
+        pred = net(x)
+        print(f"Input: {x}, Predicted: {pred}")
         
-        for j in range(len(next_layer_landas)):  # for each neuron in the next layer | next layer landas = next layer neurons
-            self.landas[i] += weights[j][i] * d_activation * next_layer_landas[j]
-            
-    d_l_w = [landa * activation for landa, activation in zip(self.landas, self.activations)]  # gradients 
-    d_l_b = self.landas
-    
-    
-    # weights_gradients = [[] for _ in range(len(next_layer_landas))]
-    # for landa in self.landas:
-    #     for activation in next_layer_activations:
-    #         pass
-    
-    
-    pprint(f"got the landas")
-    pprint(self.landas)
-    print()
-    print("this is dl dw")
-    pprint(d_l_w)
-    print()
-    print("this is dl db")
-    pprint(d_l_b)
+    # /=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
+        
