@@ -5,12 +5,13 @@ from core.activations import sigmoid, ReLU
 from core.derivatives import sigmoid as d_sigmoid
 from core.derivatives import ReLU as d_ReLU
 from pprint import pprint
+from tqdm import tqdm
 
 
 class Neuron:
     def __init__(self, input_num):
-        self.input_weigts = initialize_weights(input_num, w=0.1)
-        self.bias = initialize_weights(1, w=0.1)[0]
+        self.input_weigts = initialize_weights(input_num, w=0.01)
+        self.bias = initialize_weights(1, w=0.01)[0]
         
     
     def forward(self, x):
@@ -190,38 +191,66 @@ if __name__ == "__main__":
     # /=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
     
     # test part written by Chat GPT:
-    X = [
-        [0, 0],
-        [0, 1],
-        [1, 0],
-        [1, 1],
-    ]
+    # X = [
+    #     [0, 0],
+    #     [0, 1],
+    #     [1, 0],
+    #     [1, 1],
+    # ]
 
-    Y = [
-        [0],
-        [1],
-        [1],
-        [1],
-    ]
+    # Y = [
+    #     [0],
+    #     [1],
+    #     [1],
+    #     [1],
+    # ]
     
-    hidden_layer = Layer(input_neurons=2, neuron_num=4, activation=sigmoid, activation_differ=d_sigmoid)
+    # hidden_layer = Layer(input_neurons=2, neuron_num=4, activation=sigmoid, activation_differ=d_sigmoid)
+    # output_layer = Layer(input_neurons=4, neuron_num=1, activation=sigmoid, activation_differ=d_sigmoid)
+
+    # net = NeuralNetwork([hidden_layer, output_layer])
+
+    # for epoch in range(60000):
+    #     total_loss = 0
+    #     for x, y_true in zip(X, Y):
+    #         y_pred = net(x)
+    #         net.backward(y_true)
+    #         loss = sum([(y_true[i] - y_pred[i]) ** 2 for i in range(len(y_true))])
+    #         total_loss += loss
+    #     if epoch % 100 == 0:
+    #         print(f"Epoch {epoch}, Loss: {total_loss:.4f}")
+
+    # for x in X:
+    #     pred = net(x)
+    #     print(f"Input: {x}, Predicted: {pred}")
+        
+    # /=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
+    
+    df_data = linear_classified_data_generator(slope=2, intercept=5, n_samples=600, plot=False)
+    X_train = df_data[['x1', 'x2']].values.tolist()
+    Y_train = df_data[['class']].values.tolist()
+    # # pprint(X_train[:10])
+    # # pprint(Y_train[:10])
+
+
+    hidden_layer1 = Layer(input_neurons=2, neuron_num=4, activation=sigmoid, activation_differ=d_sigmoid)
+    # hidden_layer2 = Layer(input_neurons=16, neuron_num=8, activation=sigmoid, activation_differ=d_sigmoid)
     output_layer = Layer(input_neurons=4, neuron_num=1, activation=sigmoid, activation_differ=d_sigmoid)
 
-    net = NeuralNetwork([hidden_layer, output_layer])
-
-    for epoch in range(60000):
-        total_loss = 0
-        for x, y_true in zip(X, Y):
+    net = NeuralNetwork([hidden_layer1, output_layer], lr=0.01)
+    total_loss = 0
+    
+    # for epoch in tqdm(range(5000), desc="training"):
+    for epoch in range(5000):
+        for x, y_true in zip(X_train, Y_train):
             y_pred = net(x)
             net.backward(y_true)
             loss = sum([(y_true[i] - y_pred[i]) ** 2 for i in range(len(y_true))])
             total_loss += loss
-        if epoch % 100 == 0:
-            print(f"Epoch {epoch}, Loss: {total_loss:.4f}")
+        
+        print(f"Epoch {epoch}, Training Loss: {total_loss/len(X_train):.4f}")
+        total_loss = 0
 
-    for x in X:
+    for x, y_true in zip(X_train[:10], Y_train[:10]):
         pred = net(x)
-        print(f"Input: {x}, Predicted: {pred}")
-        
-    # /=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
-        
+        print(f"Input: {x}, Predicted: {1 if pred[0] > 0.5 else 0} | real output: {y_true}")
