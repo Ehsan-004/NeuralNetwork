@@ -9,9 +9,9 @@ from tqdm import tqdm
 
 
 class Neuron:
-    def __init__(self, input_num):
-        self.input_weigts = initialize_weights(input_num, w=0.01)
-        self.bias = initialize_weights(1, w=0.01)[0]
+    def __init__(self, input_num, w=0.01):
+        self.input_weigts = initialize_weights(input_num, w)
+        self.bias = initialize_weights(1, w)[0]
         
     
     def forward(self, x):
@@ -32,12 +32,13 @@ class Neuron:
 
 
 class Layer:
-    def __init__(self, input_neurons,  neuron_num, activation, activation_differ):
+    def __init__(self, input_neurons: int,  neuron_num: int, activation, activation_differ):
         self.neurons = [Neuron(input_neurons) for i in range(neuron_num)]
         self.input_neurons = input_neurons
         self.activation = activation
-        self.activation_differ = activation_differ
-        self.landas = [0 for _ in range(len(self.neurons))]
+        self.activation_differ = activation_differ  # activation function differntion to compute lambdas
+        self.lambdas = [0 for _ in range(len(self.neurons))]
+        # print(f"initiated self lambdas: {self.lambdas}")
         self.activations = []
         self.lr = 0.1
     
@@ -59,19 +60,30 @@ class Layer:
         """
         
         weights = self.get_weights()
-        landas = self.landas
+        landas = self.lambdas
         self.input_neurons
         
-        previous_landas = []
+        previous_lambdas = []
         
-        for i in range(len(self.neurons)):  # j for current layer neurons
+        # current layer has len(self.neurons) neurons.  corresponded by c
+        # previous layer has self.input_neurons nuerons.  corresponded by i
+        # print(f"\n this layer has {len(self.neurons)} | range of C | neurons and {self.input_neurons} input neurons | range of I")
+        # print(f"length of this layer's lambda = {len(self.lambdas)} | range of ")
+    
+    
+        for c in range(len(self.neurons)):  # c for current layer neurons
             temp_landa = 0
-            for j in range(self.input_neurons):  # i for previous layer neurons
-                temp_landa += landas[i] * weights[i][j] * previous_activation_diff(previous_activations[j])
-            previous_landas.append(temp_landa)
+            # print(f"I'm on neuron number = {c+1}")
+            for i in range(self.input_neurons):  # i for previous layer neurons
+                temp_landa += landas[c] * weights[c][i] * previous_activation_diff(previous_activations[i])
+                # print(f"now calculate lambda for neuron {i} in my prevous layer ")
+                
+                previous_lambdas.append(temp_landa)  # This line should be here not 4 spaces back!!!!!!!!!!!!!!!!!!!!!!
             
         # ---------- important ---------- #
-        return previous_landas  # must be set for previous layer
+        # print(f"I have {len(self.neurons)} neurons and I calculated my previous layer lambdas as: {previous_landas}")
+        # print("=========================================")
+        return previous_lambdas  # must be set for previous layer
     
     
     def compute_grades(self, next_layer_landas):
@@ -95,7 +107,7 @@ class Layer:
         for i in range(len(self.neurons)):
             for j in range(self.input_neurons):
                 self.neurons[i].input_weigts[j] -= gradients[i][j] * lr
-            self.neurons[i].bias -= self.landas[i] * lr
+            self.neurons[i].bias -= self.lambdas[i] * lr
     
     
     def get_weights(self):
@@ -137,7 +149,7 @@ class NeuralNetwork:
             landa = -2 * error * d_act
             landas.append(landa)
         
-        output_layer.landas = landas
+        output_layer.lambdas = landas
         
         for i in range(len(self.layers)-2, -1, -1):  # for each layer in nn (from end to start)
             # -2 because the last layer is output and has a different formula
@@ -146,9 +158,9 @@ class NeuralNetwork:
             #   n is in next layer | i is in current layer
             l = self.layers[i]
             l_next = self.layers[i+1]  # next layer nodes (the n above coresponds to each node in this layer)
-            l.landas = l_next.compute_pre_landas(l.activations, l.activation_differ)  # current or previous layer nodes ragarding to our logic
+            l.lambdas = l_next.compute_pre_landas(l.activations, l.activation_differ)  # current or previous layer nodes ragarding to our logic
             # (the i above coresponds to each node in this layer)
-            gradients = l.compute_grades(l_next.landas)
+            gradients = l.compute_grades(l_next.lambdas)
             l_next.update_weights(gradients)
             
         pass
@@ -250,20 +262,20 @@ if __name__ == "__main__":
     # # pprint(X_train[:10])
     # # pprint(Y_train[:10])
 
+    la = [
+        Layer(input_neurons=2, neuron_num=8, activation=sigmoid, activation_differ=d_sigmoid),
+        Layer(input_neurons=8, neuron_num=4, activation=sigmoid, activation_differ=d_sigmoid),
+        Layer(input_neurons=4, neuron_num=1, activation=sigmoid, activation_differ=d_sigmoid),
+        ]
 
-    hidden_layer1 = Layer(input_neurons=2, neuron_num=8, activation=sigmoid, activation_differ=d_sigmoid)
+    net = NeuralNetwork(la, lr=0.01)
     
-    hidden_layer2 = Layer(input_neurons=8, neuron_num=4, activation=sigmoid, activation_differ=d_sigmoid)
-    
-    output_layer = Layer(input_neurons=4, neuron_num=1, activation=sigmoid, activation_differ=d_sigmoid)
-
-    net = NeuralNetwork([hidden_layer1, output_layer], lr=0.01)
     total_loss = 0
     print()
     print("=== training ===")
     print()
     # for epoch in tqdm(range(5000), desc="training"):
-    for epoch in range(5000):
+    for epoch in range(600):
         for x, y_true in zip(X_train, Y_train):
             y_pred = net(x)
             net.backward(y_true)
