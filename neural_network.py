@@ -9,25 +9,47 @@ from tqdm import tqdm
 
 
 class Neuron:
-    def __init__(self, input_num, w=0.01):
+    """
+    This class simulates a NEURON. a neuron has some weights and a bias value
+    """
+    def __init__(self, input_num: int, w: float = 0.01):
+        """
+        initializes a neuron with specified input numbers and one bias
+        
+        args:
+            input_num: number of input neurons to this neuron. (previous layer neurons for FC layers)
+            w: weight for initialize the weighs and bias
+        """
         self.input_weigts = initialize_weights(input_num, w)
         self.bias = initialize_weights(1, w)[0]
         
     
-    def forward(self, x):
-        y = sum([(x_value*weight) for x_value, weight in zip(x, self.input_weigts)]) + self.bias
-        return y
+    def forward(self, x: list) -> float:
+        """
+        passes the list of actived outputs from previous layer nodes through the neuron and returns the output
+        actually its the WEIGHTED SUM OF INPUTS
+        
+        args:
+            x: list of previous layer actived outputs
+        """
+        return sum([(x_value*weight) for x_value, weight in zip(x, self.input_weigts)]) + self.bias
     
     
-    def get_weights(self):
+    def get_weights(self) -> list[float]:
+        """
+        returns a list of neuron's weights
+        """
         return self.input_weigts
     
     
-    def get_bias(self):
+    def get_bias(self) -> float:
+        """
+        returns neurons bias
+        """
         return self.bias
     
     
-    def __call__(self, x):
+    def __call__(self, x):  # you can call the forward method by object's name
         return self.forward(x)
 
 
