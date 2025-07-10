@@ -59,16 +59,19 @@ class Neuron:
 
 class Layer:
     """
-    This class simulates a layer in a neural network that consists of some nuerons.
+    This class simulates a LAYER in a neural network that consists of some Neurons.
     """
-    def __init__(self, input_neurons: int,  neuron_num: int, activation: Callable, activation_differ: Callable, w=0.01):
+    def __init__(self, input_neurons: int,  neuron_num: int, activation: Callable, activation_differ: Callable, w=0.01, lr=0.1):
         """
         initializes a layer of neurons with specified input neuron numbers which actually is previous layer neurons number
         
         args:
             input_neurons: number of input neurons to this neuron. (previous layer neurons for FC layers)
             neuron_num: number of neurons for the layer
+            activation: the activation function for this layer
+            activation_differ: differantiate of current layer's activation function
             w: weight for initialize the weighs and bias for each neuron. change it according to layer position
+            lr: learning rate for this layer
         """
         self.neurons = [Neuron(input_neurons, w=w) for _ in range(neuron_num)]  # initialize neurons
         self.input_neurons_num = input_neurons
@@ -76,6 +79,7 @@ class Layer:
         self.activation_differ = activation_differ  # activation function differntion to compute lambdas
         self.lambdas = [0 for _ in range(len(self.neurons))]  # lambdas will be used later to update weights
         self.activations = []  # this is actually outputs of this layer after passing from activation function. will be used to update weights.
+        self.lr = lr
         
     
     
@@ -97,7 +101,7 @@ class Layer:
         return self.activations
     
     
-    def compute_pre_lambdas(self, previous_activations: list[float], previous_activation_diff: Callable):
+    def compute_pre_lambdas(self, previous_activations: list[float], previous_activation_diff: Callable) -> list[float]:
         """
         calculates previous layer lambdas. read docs for NeuralNetwork.backward for more details ...
         
@@ -131,7 +135,7 @@ class Layer:
         return previous_lambdas  # must be set for previous layer to update weights
     
     
-    def compute_grades(self, next_layer_lambdas: list):
+    def compute_grades(self, next_layer_lambdas: list) ->list[list[float]]:
         """
         calculates gradients for weights between current layer and next layer
         they will be used to update weights in Layet.update_weights()
@@ -157,7 +161,7 @@ class Layer:
         return gradients
     
     
-    def update_weights(self, gradients: list[list[float]]):
+    def update_weights(self, gradients: list[list[float]]) -> None:
         """
         gets the gradient between current layer and previous layer and updates weights
         
@@ -167,12 +171,12 @@ class Layer:
         
         lr = self.lr
         for c in range(len(self.neurons)):  # c for current layer neurons
-            for i in range(self.input_neurons_num):  # j for previous layer neurons
+            for i in range(self.input_neurons_num):  # i for previous layer neurons
                 self.neurons[c].input_weigts[i] -= gradients[c][i] * lr  # this is the Gradient Descent for weights
             self.neurons[c].bias -= self.lambdas[c] * lr  # Gradient Descent for bias
     
     
-    def get_weights(self):
+    def get_weights(self) -> list[list[float]]:
         """
         returns this layer's weights
         
@@ -185,13 +189,33 @@ class Layer:
 
 
 class NeuralNetwork:
-    def __init__(self, layers: list[Layer], lr=1):
-        self.layers = layers
-        self.lr = lr
-        for l in self.layers:
-            l.lr = lr
+    """
+    This class simulates a NEURAL NETWORK consists of some Layers
+    """
+    def __init__(self, layers: list[Layer]):
+        """
+        initializes a Neural Network with specified layers and learning rate
         
-    def forward(self, x):
+        args:
+            layers: a list of Layers
+        """
+        self.layers = layers
+        
+        # if you want to have the same lr for all layers then uncomment this and add lr as an arg!
+        # self.lr = lr
+        # for l in self.layers:
+        #     l.lr = lr
+        
+    def forward(self, x: list) -> list:
+        """
+        passes the input data to network
+        
+        args:
+            x: input to the network according to first layers input numbers (always a list)
+        
+        returns:
+            output of network according to number of neurons in the last layers (has its length)
+        """
         if len(x) != self.layers[0].input_neurons_num:
             raise ValueError(f"x must have len {self.layers[0].input_neurons_num} but got len {len(x)}")
         
@@ -200,40 +224,54 @@ class NeuralNetwork:
         return x
 
 
-    def backward(self, y_true):
+    def backward(self, y_true: list) -> None:
+        """
+        implements backward pass process. after forward passing data into network, its time to backward pass
+        in backward pass gradients which actually are dL/dw and dL/db will be calculated and then weights are updated
+        read formula and How To Compute in comments!
+        
+        args:
+            y_true: target output of data sample. must be a list
+        """
         # for each output neuron:
         #   landa = -2 * error * activation_diff(neuron activation)
         
-        output_layer = self.layers[-1]
+        output_layer = self.layers[-1]  # this is the last layer and has a different method to compute gradients
         y_pred = output_layer.activations
-        landas = []  # will be used as output layer landas
+        lambdas = []  # will be used as output layer lambdas
         
-        for i in range(len(y_true)):  # for each output node (just for one input)
-            # for output layer nodes the formula is:
+        for i in range(len(y_true)):  # i corresponds to each output node (just for one sample of data)
+            # for output layer nodes the formula to compute lambda is:
             #   lambda = -2 * error[i] * df(actived[i])
             error = y_true[i] - y_pred[i]  # error
             d_act = output_layer.activation_differ(y_pred[i])  # df(actived[i])
             landa = -2 * error * d_act
-            landas.append(landa)
+            lambdas.append(landa)
         
-        output_layer.lambdas = landas
+        output_layer.lambdas = lambdas
         
         for i in range(len(self.layers)-2, -1, -1):  # for each layer in nn (from end to start)
             # -2 because the last layer is output and has a different formula
-            # for hidde layer nodes the formula is:
+            # for hidde layer nodes the formula to compute lambda is:
             #   lambda[i] = sum(lambda[n] * df(actived[i]) * weights[i -> n])
             #   n is in next layer | i is in current layer
             l = self.layers[i]
             l_next = self.layers[i+1]  # next layer nodes (the n above coresponds to each node in this layer)
             l.lambdas = l_next.compute_pre_lambdas(l.activations, l.activation_differ)  # current or previous layer nodes ragarding to our logic
             # (the i above coresponds to each node in this layer)
-            gradients = l.compute_grades(l_next.lambdas)
-            l_next.update_weights(gradients)
             
-        pass
-    
-    
-    def get_weights(self):
+            # be sure to read doc fot these methods
+            gradients = l.compute_grades(l_next.lambdas)
+            l_next.update_weights(gradients)  
+                
+
+    def get_weights(self) -> list[list[list[float]]]:
+        """
+        returns network weights
+        
+        returns:
+            list[list[list[float]]]: same as Layer.get_weights() but has a layers dimension! (I mean a line for each layer ...)
+        """
         return [l.get_weights() for l in self.layers]
     
     
@@ -242,76 +280,8 @@ class NeuralNetwork:
 
 
 if __name__ == "__main__":
-    # l = Layer(3, 2, sigmoid, d_sigmoid)
-    # pprint(l.get_weights())
-    # print()
-    # l.forward([1,2,3])
-    # print()
-    # pprint(l.activations)
     
-    # /=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
-    
-    # layers = [Layer(2, 2, ReLU, d_ReLU),  Layer(2, 3, ReLU, d_ReLU), Layer(3, 2, sigmoid, d_sigmoid)]
-    # nn = NeuralNetwork(layers)
-    # print(50*"-=")
-    # X = [[10,20], [30,40], [50,60], [70,80]]
-    # out = [nn(x) for x in X]
-    # pprint(out)
-    # print()
-    # ws = nn.get_weights()
-    # for i in range(len(layers)):
-    #     print(f"layer number {i+1}")
-    #     pprint(ws[i])
-    #     print()
-    
-    # /=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
-    
-    # l = Layer(2,3, ReLU, d_ReLU)  # next layer has two nuerons
-    # l.forward([10, 11])
-    # w = [[0.005007011765916471, -0.06692413065941487, -0.02683456361965499],[-0.03470931602341219, 0.0027481619278391808, 0.1626835551191007]]
-    # pprint(l.get_weights())
-    # l.backward_pass([2,3])
-    
-    # /=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
-    
-    # test part written by Chat GPT:
-    # X = [
-    #     [0, 0],
-    #     [0, 1],
-    #     [1, 0],
-    #     [1, 1],
-    # ]
-
-    # Y = [
-    #     [0],
-    #     [1],
-    #     [1],
-    #     [1],
-    # ]
-    
-    # hidden_layer = Layer(input_neurons=2, neuron_num=4, activation=sigmoid, activation_differ=d_sigmoid)
-    # output_layer = Layer(input_neurons=4, neuron_num=1, activation=sigmoid, activation_differ=d_sigmoid)
-
-    # net = NeuralNetwork([hidden_layer, output_layer])
-
-    # for epoch in range(60000):
-    #     total_loss = 0
-    #     for x, y_true in zip(X, Y):
-    #         y_pred = net(x)
-    #         net.backward(y_true)
-    #         loss = sum([(y_true[i] - y_pred[i]) ** 2 for i in range(len(y_true))])
-    #         total_loss += loss
-    #     if epoch % 100 == 0:
-    #         print(f"Epoch {epoch}, Loss: {total_loss:.4f}")
-
-    # for x in X:
-    #     pred = net(x)
-    #     print(f"Input: {x}, Predicted: {pred}")
-        
-    # /=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
-    print()
-    print("=== preprocessing ===")
-    print()
+    print("\n=== preprocessing ===\n")
     
     df_data = linear_classified_data_generator(slope=2, intercept=5, n_samples=600, plot=False)
     X = df_data[['x1', 'x2']].values.tolist()
@@ -326,32 +296,33 @@ if __name__ == "__main__":
     Y_train = Y[:int(train_percent*len(X))]
     Y_test = Y[int(train_percent*len(X)):]
     
-    # # pprint(X_train[:10])
-    # # pprint(Y_train[:10])
 
     la = [
-        Layer(input_neurons=2, neuron_num=8, activation=sigmoid, activation_differ=d_sigmoid),
-        Layer(input_neurons=8, neuron_num=4, activation=sigmoid, activation_differ=d_sigmoid),
-        Layer(input_neurons=4, neuron_num=1, activation=sigmoid, activation_differ=d_sigmoid),
+        Layer(input_neurons=2, neuron_num=8, activation=sigmoid, activation_differ=d_sigmoid, w=0.1, lr=1),
+        Layer(input_neurons=8, neuron_num=4, activation=sigmoid, activation_differ=d_sigmoid, w=0.1, lr=1),
+        Layer(input_neurons=4, neuron_num=2, activation=sigmoid, activation_differ=d_sigmoid, w=0.1),
+        Layer(input_neurons=2, neuron_num=1, activation=sigmoid, activation_differ=d_sigmoid, w=0.1),
         ]
 
-    net = NeuralNetwork(la, lr=0.01)
+    net = NeuralNetwork(la)
+        
+    print("\n=== training ===\n")
     
-    total_loss = 0
-    print()
-    print("=== training ===")
-    print()
     # for epoch in tqdm(range(5000), desc="training"):
     for epoch in range(600):
+        total_loss = 0
         for x, y_true in zip(X_train, Y_train):
             y_pred = net(x)
             net.backward(y_true)
             loss = sum([(y_true[i] - y_pred[i]) ** 2 for i in range(len(y_true))])
             total_loss += loss
+            
         if epoch % 10 == 0:
             print(f"Epoch {epoch}, Training Loss: {total_loss/len(X_train):.4f}")
-        total_loss = 0
-
+            
+            
+    print("\n=== validating ===\n")
+            
     correct = 0
     
     for x, y_true in zip(X_test, Y_test):
@@ -361,9 +332,7 @@ if __name__ == "__main__":
         p = 1 if pred[0] > 0.5 else 0
         if p == y_true[0]:
             correct += 1
-    print()
-    print("=== validating ===")
-    print()
+            
     print(f"number of test samples: {len(X_test)}")
     print(f"accuracy of model: {correct/len(X_test)}")
         
