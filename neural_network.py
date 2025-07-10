@@ -122,27 +122,32 @@ class NeuralNetwork:
 
 
     def backward(self, y_true):
-        # backward for output layer:
-        # TODO ...
         # for each output neuron:
         #   landa = -2 * error * activation_diff(neuron activation)
         
         output_layer = self.layers[-1]
         y_pred = output_layer.activations
-        landas = []
+        landas = []  # will be used as output layer landas
         
-        for i in range(len(y_true)):
-            error = y_true[i] - y_pred[i]
-            d_act = output_layer.activation_differ(y_pred[i])
+        for i in range(len(y_true)):  # for each output node (just for one input)
+            # for output layer nodes the formula is:
+            #   lambda = -2 * error[i] * df(actived[i])
+            error = y_true[i] - y_pred[i]  # error
+            d_act = output_layer.activation_differ(y_pred[i])  # df(actived[i])
             landa = -2 * error * d_act
             landas.append(landa)
         
         output_layer.landas = landas
         
-        for i in range(len(self.layers)-2, -1, -1):  # -2 because the last layer is output and is different
+        for i in range(len(self.layers)-2, -1, -1):  # for each layer in nn (from end to start)
+            # -2 because the last layer is output and has a different formula
+            # for hidde layer nodes the formula is:
+            #   lambda[i] = sum(lambda[n] * df(actived[i]) * weights[i -> n])
+            #   n is in next layer | i is in current layer
             l = self.layers[i]
-            l_next = self.layers[i+1]
-            l.landas = l_next.compute_pre_landas(l.activations, l.activation_differ)
+            l_next = self.layers[i+1]  # next layer nodes (the n above coresponds to each node in this layer)
+            l.landas = l_next.compute_pre_landas(l.activations, l.activation_differ)  # current or previous layer nodes ragarding to our logic
+            # (the i above coresponds to each node in this layer)
             gradients = l.compute_grades(l_next.landas)
             l_next.update_weights(gradients)
             
@@ -225,21 +230,38 @@ if __name__ == "__main__":
     #     print(f"Input: {x}, Predicted: {pred}")
         
     # /=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
+    print()
+    print("=== preprocessing ===")
+    print()
     
     df_data = linear_classified_data_generator(slope=2, intercept=5, n_samples=600, plot=False)
-    X_train = df_data[['x1', 'x2']].values.tolist()
-    Y_train = df_data[['class']].values.tolist()
+    X = df_data[['x1', 'x2']].values.tolist()
+    Y = df_data[['class']].values.tolist()
+    
+    train_percent = 0.9
+    valid_percent = 0.1
+    
+    X_train = X[:int(train_percent*len(X))]
+    X_test = X[int(train_percent*len(X)):]
+    
+    Y_train = Y[:int(train_percent*len(X))]
+    Y_test = Y[int(train_percent*len(X)):]
+    
     # # pprint(X_train[:10])
     # # pprint(Y_train[:10])
 
 
-    hidden_layer1 = Layer(input_neurons=2, neuron_num=4, activation=sigmoid, activation_differ=d_sigmoid)
-    # hidden_layer2 = Layer(input_neurons=16, neuron_num=8, activation=sigmoid, activation_differ=d_sigmoid)
+    hidden_layer1 = Layer(input_neurons=2, neuron_num=8, activation=sigmoid, activation_differ=d_sigmoid)
+    
+    hidden_layer2 = Layer(input_neurons=8, neuron_num=4, activation=sigmoid, activation_differ=d_sigmoid)
+    
     output_layer = Layer(input_neurons=4, neuron_num=1, activation=sigmoid, activation_differ=d_sigmoid)
 
     net = NeuralNetwork([hidden_layer1, output_layer], lr=0.01)
     total_loss = 0
-    
+    print()
+    print("=== training ===")
+    print()
     # for epoch in tqdm(range(5000), desc="training"):
     for epoch in range(5000):
         for x, y_true in zip(X_train, Y_train):
@@ -251,6 +273,18 @@ if __name__ == "__main__":
         print(f"Epoch {epoch}, Training Loss: {total_loss/len(X_train):.4f}")
         total_loss = 0
 
-    for x, y_true in zip(X_train[:10], Y_train[:10]):
+    correct = 0
+    
+    for x, y_true in zip(X_test, Y_test):
         pred = net(x)
-        print(f"Input: {x}, Predicted: {1 if pred[0] > 0.5 else 0} | real output: {y_true}")
+        # print(f"Input: {x}, Predicted: {1 if pred[0] > 0.5 else 0} | real output: {y_true}")
+        print(f"Predicted: {1 if pred[0] > 0.5 else 0} | target: {y_true[0]}")
+        p = 1 if pred[0] > 0.5 else 0
+        if p == y_true[0]:
+            correct += 1
+    print()
+    print("=== validating ===")
+    print()
+    print(f"number of test samples: {len(X_test)}")
+    print(f"accuracy of model: {correct/len(X_test)}")
+        
