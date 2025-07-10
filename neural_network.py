@@ -6,13 +6,14 @@ from core.derivatives import sigmoid as d_sigmoid
 from core.derivatives import ReLU as d_ReLU
 from pprint import pprint
 from tqdm import tqdm
+from typing import Callable
 
 
 class Neuron:
     """
     This class simulates a NEURON. a neuron has some weights and a bias value
     """
-    def __init__(self, input_num: int, w: float = 0.01):
+    def __init__(self, input_num: int, w: float):
         """
         initializes a neuron with specified input numbers and one bias
         
@@ -31,6 +32,9 @@ class Neuron:
         
         args:
             x: list of previous layer actived outputs
+            
+        returns:
+            a not activated float value
         """
         return sum([(x_value*weight) for x_value, weight in zip(x, self.input_weigts)]) + self.bias
     
@@ -54,86 +58,127 @@ class Neuron:
 
 
 class Layer:
-    def __init__(self, input_neurons: int,  neuron_num: int, activation, activation_differ):
-        self.neurons = [Neuron(input_neurons) for i in range(neuron_num)]
-        self.input_neurons = input_neurons
+    """
+    This class simulates a layer in a neural network that consists of some nuerons.
+    """
+    def __init__(self, input_neurons: int,  neuron_num: int, activation: Callable, activation_differ: Callable, w=0.01):
+        """
+        initializes a layer of neurons with specified input neuron numbers which actually is previous layer neurons number
+        
+        args:
+            input_neurons: number of input neurons to this neuron. (previous layer neurons for FC layers)
+            neuron_num: number of neurons for the layer
+            w: weight for initialize the weighs and bias for each neuron. change it according to layer position
+        """
+        self.neurons = [Neuron(input_neurons, w=w) for _ in range(neuron_num)]  # initialize neurons
+        self.input_neurons_num = input_neurons
         self.activation = activation
         self.activation_differ = activation_differ  # activation function differntion to compute lambdas
-        self.lambdas = [0 for _ in range(len(self.neurons))]
-        # print(f"initiated self lambdas: {self.lambdas}")
-        self.activations = []
-        self.lr = 0.1
-    
-    
-    def forward(self, x):
-        if len(x) != self.input_neurons:
-            raise ValueError(f"input to this layer must have len {self.input_neurons} but got len {len(x)}")
+        self.lambdas = [0 for _ in range(len(self.neurons))]  # lambdas will be used later to update weights
+        self.activations = []  # this is actually outputs of this layer after passing from activation function. will be used to update weights.
         
-        out = [nr.forward(x) for nr in self.neurons]
-        self.activations = self.activation(out)
+    
+    
+    def forward(self, x: list) -> list:
+        """
+        passes the list of inputs from previous layer through the neuron and returns the outputs as a list
+        
+        args:
+            x: list of inputs from previous layer, must have the same length as previous layer neurons
+        
+        returns:
+            list[float]: a list of activated outputs
+        """
+        if len(x) != self.input_neurons_num:
+            raise ValueError(f"input to this layer must have len {self.input_neurons_num} but got len {len(x)}")
+        
+        out = [nr.forward(x) for nr in self.neurons]  # not activated outputs
+        self.activations = self.activation(out)  # activating outputs
         return self.activations
     
     
-    def compute_pre_landas(self, previous_activations, previous_activation_diff):
-        # pre act diff is a functions
-        # pre acts is a list
+    def compute_pre_lambdas(self, previous_activations: list[float], previous_activation_diff: Callable):
         """
-        calculates previous layer landas
+        calculates previous layer lambdas. read docs for NeuralNetwork.backward for more details ...
+        
+        args:
+            previous_activation: a list of previous layer's activations
+            previous_activation_diff: this is actually the differantion of the previous layer activation function. 
+                example: f(x)=3x    --->   df(x) = 3
+                
+        returns:
+            list[float]: a list of previous layer lambdas (of course it has len of previous layer nodes!)
         """
         
         weights = self.get_weights()
         landas = self.lambdas
-        self.input_neurons
+        self.input_neurons_num
         
         previous_lambdas = []
         
         # current layer has len(self.neurons) neurons.  corresponded by c
         # previous layer has self.input_neurons nuerons.  corresponded by i
-        # print(f"\n this layer has {len(self.neurons)} | range of C | neurons and {self.input_neurons} input neurons | range of I")
-        # print(f"length of this layer's lambda = {len(self.lambdas)} | range of ")
-    
     
         for c in range(len(self.neurons)):  # c for current layer neurons
             temp_landa = 0
-            # print(f"I'm on neuron number = {c+1}")
-            for i in range(self.input_neurons):  # i for previous layer neurons
+            for i in range(self.input_neurons_num):  # i for previous layer neurons
                 temp_landa += landas[c] * weights[c][i] * previous_activation_diff(previous_activations[i])
-                # print(f"now calculate lambda for neuron {i} in my prevous layer ")
                 
-                previous_lambdas.append(temp_landa)  # This line should be here not 4 spaces back!!!!!!!!!!!!!!!!!!!!!!
+                previous_lambdas.append(temp_landa)  # I don't remove this comment. I spend some days looking for this mistake 
+                # the line above didn't have the necessary indent and was a tab further back
             
         # ---------- important ---------- #
-        # print(f"I have {len(self.neurons)} neurons and I calculated my previous layer lambdas as: {previous_landas}")
-        # print("=========================================")
-        return previous_lambdas  # must be set for previous layer
+        return previous_lambdas  # must be set for previous layer to update weights
     
     
-    def compute_grades(self, next_layer_landas):
+    def compute_grades(self, next_layer_lambdas: list):
         """
         calculates gradients for weights between current layer and next layer
+        they will be used to update weights in Layet.update_weights()
+        
+        args:
+            next_layer_lambdas: comes from Layer.compute_pre_lambdas() (read the comment on next line of that method)
+        
+        returns:
+            list[list[float]]: read the comments below. 
         """
-        next_l_neuron_num = len(next_layer_landas)
+        
+        # because we keep the weight with the layer which they go to, so this list should have the len of next layer nodes 
+        # (bacause it is about weights from current layer to next layer)
+        # obviously each list has len of current layer's nodes
+        next_l_neuron_num = len(next_layer_lambdas)
+        gradients = [[0 for __ in range(len(self.neurons))] for _ in range(next_l_neuron_num)]
         activations = self.activations
         
-        gradients = [[0 for __ in range(len(self.neurons))] for _ in range(next_l_neuron_num)]
-        
-        for i in range(len(self.neurons)):
-            for j in range(next_l_neuron_num):
-                gradients[j][i] = next_layer_landas[j] * activations[i]
+        for c in range(len(self.neurons)):  # c for current layer neurons
+            for j in range(next_l_neuron_num):  # j for next layer neurons
+                gradients[j][c] = next_layer_lambdas[j] * activations[c]  # g[j][c] means weight from node[c] in this layer to node[j] in next layer
                 
         return gradients
     
     
-    def update_weights(self, gradients):
+    def update_weights(self, gradients: list[list[float]]):
+        """
+        gets the gradient between current layer and previous layer and updates weights
+        
+        args:
+            gradients: a list which has length of len(self.neurons) and each list inside it has length of previous layer neurons
+        """
+        
         lr = self.lr
-        for i in range(len(self.neurons)):
-            for j in range(self.input_neurons):
-                self.neurons[i].input_weigts[j] -= gradients[i][j] * lr
-            self.neurons[i].bias -= self.lambdas[i] * lr
+        for c in range(len(self.neurons)):  # c for current layer neurons
+            for i in range(self.input_neurons_num):  # j for previous layer neurons
+                self.neurons[c].input_weigts[i] -= gradients[c][i] * lr  # this is the Gradient Descent for weights
+            self.neurons[c].bias -= self.lambdas[c] * lr  # Gradient Descent for bias
     
     
     def get_weights(self):
-        # each line of this list shows input weights to a neuron
+        """
+        returns this layer's weights
+        
+        returns:
+            list[list[float]]: a list which has length of len(self.neurons) and each list inside contains input weights to a neuron of this layer
+        """
         out = [nr.get_weights() for nr in self.neurons]
         return out
 
@@ -147,8 +192,8 @@ class NeuralNetwork:
             l.lr = lr
         
     def forward(self, x):
-        if len(x) != self.layers[0].input_neurons:
-            raise ValueError(f"x must have len {self.layers[0].input_neurons} but got len {len(x)}")
+        if len(x) != self.layers[0].input_neurons_num:
+            raise ValueError(f"x must have len {self.layers[0].input_neurons_num} but got len {len(x)}")
         
         for layer in self.layers:
             x = layer.forward(x)
@@ -180,7 +225,7 @@ class NeuralNetwork:
             #   n is in next layer | i is in current layer
             l = self.layers[i]
             l_next = self.layers[i+1]  # next layer nodes (the n above coresponds to each node in this layer)
-            l.lambdas = l_next.compute_pre_landas(l.activations, l.activation_differ)  # current or previous layer nodes ragarding to our logic
+            l.lambdas = l_next.compute_pre_lambdas(l.activations, l.activation_differ)  # current or previous layer nodes ragarding to our logic
             # (the i above coresponds to each node in this layer)
             gradients = l.compute_grades(l_next.lambdas)
             l_next.update_weights(gradients)
@@ -303,8 +348,8 @@ if __name__ == "__main__":
             net.backward(y_true)
             loss = sum([(y_true[i] - y_pred[i]) ** 2 for i in range(len(y_true))])
             total_loss += loss
-        
-        print(f"Epoch {epoch}, Training Loss: {total_loss/len(X_train):.4f}")
+        if epoch % 10 == 0:
+            print(f"Epoch {epoch}, Training Loss: {total_loss/len(X_train):.4f}")
         total_loss = 0
 
     correct = 0
