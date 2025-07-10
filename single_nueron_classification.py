@@ -1,9 +1,6 @@
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 from core.activations import sigmoid
 from core.loss import msq
-from math import ceil, floor
 from core.tools import initialize_weights, linear_classified_data_generator
 
 
@@ -39,7 +36,7 @@ def dl_db_linear(xs: list, weights, class_predicted, true_class, loss_function, 
     return sum(dl_bs)
 
 
-def linear_classification(dataset, epochs=500, learning_rate = 0.001):
+def linear_classification(dataset, epochs=100, learning_rate = 0.0001):
     w1, w2, b = initialize_weights(3)
     
     print(f"Initial w1 = {w1:.4f}")

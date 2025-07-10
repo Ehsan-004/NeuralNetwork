@@ -1,45 +1,49 @@
 # Neural Network
 
-[![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-blue?logo=github)](https://github.com/Ehsan-004/TinyUrler)
-[![License](https://img.shields.io/badge/License-OpenSource-green)](https://github.com/Ehsan-004/TinyUrler/blob/main/LICENSE)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-blue?logo=github)](https://github.com/Ehsan-004/NeuralNetwork)
+[![License](https://img.shields.io/badge/License-OpenSource-green)](https://github.com/Ehsan-004/NeuralNetwork/blob/main/LICENSE)
 [![Developer](https://img.shields.io/badge/Developer-Ehsan--004-purple?logo=github)](https://github.com/Ehsan-004)
 
-## I implement a neural network from scratch. </br>
-Right now I'v jsut created a simple one neuron model that performs Regression!
+## Implemention of a neural network from scratch! </br>
+In this repository I implemented a neural network from scratch. I am very excited about this and it was verrrry eager to see it works and now it's done!</br>
 </br>
 
 ## 📝 Description
-
-I've alwyas wondered how AI and specially a neural network works in real life! So I decided to create one and gain a lot of experiment.
+a simple implemention of a neural network.</br>
+also simple implemention of a single neuron classification and regression models.
 </br>
 
-## I'll update this list as I go further!
-[2025-06-05] a one neuron model to perform liniear regression
 
-
-## output for single neuron liniear regression
-&nbsp;&nbsp;&nbsp;&nbsp;Initial w = -0.0213</br>
-&nbsp;&nbsp;&nbsp;&nbsp;Initial b = -0.0230</br>
-&nbsp;&nbsp;&nbsp;&nbsp;Epoch 1/120000, Loss: 14033.81578769, Current w: 1.356843, Current b: -0.002355</br>
-&nbsp;&nbsp;&nbsp;&nbsp;Epoch 1000/120000, Loss: 0.21989342, Current w: 2.014104, Current b: 0.055112</br>
-&nbsp;&nbsp;&nbsp;&nbsp;Epoch 2000/120000, Loss: 0.19926887, Current w: 2.013426, Current b: 0.100515</br>
-&nbsp;&nbsp;&nbsp;&nbsp;Epoch 3000/120000, Loss: 0.18057877, Current w: 2.012781, Current b: 0.143737</br>
-&nbsp;&nbsp;&nbsp;&nbsp;Epoch 4000/120000, Loss: 0.16364168, Current w: 2.012167, Current b: 0.184881</br>
-&nbsp;&nbsp;&nbsp;&nbsp;...</br>
-&nbsp;&nbsp;&nbsp;&nbsp;Epoch 119000/120000, Loss: 0.00000197, Current w: 2.000042, Current b: 0.997170</br>
-&nbsp;&nbsp;&nbsp;&nbsp;Epoch 120000/120000, Loss: 0.00000179, Current w: 2.000040, Current b: 0.997306</br>
+# To use:
+## Define a model:
+Import class ```Layer``` from ```neural_network.py``` and then create a list and define layers for the network.</br>
+To create a layer you have these options to be passed:</br>
+```python
+Layer(input_neurons, neuron_num, activation, activation_differ, w=0.1, lr=1)
+```
 </br>
-&nbsp;&nbsp;&nbsp;&nbsp; --- Training Finished ---</br>
-&nbsp;&nbsp;&nbsp;&nbsp;Final w = 2.000040</br>
-&nbsp;&nbsp;&nbsp;&nbsp;Final b = 0.997306</br>
-&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp; --- Testing the model ---</br>
-&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;Actual Y for x=40: 81</br>
-&nbsp;&nbsp;&nbsp;&nbsp;Model predict for x=40: 80.99891446864531</br>
-&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;Actual Y for x=75: 151</br>
-&nbsp;&nbsp;&nbsp;&nbsp;Model predict for x=75: 151.00032189306538</br>
+Read about details on ```Layer``` [docs](neural_network.py) line 53.</br>
+
+
+Then it's time to create the network. To create a network you should just pass the layers as a list to it:</br>
+```python
+net = NeuralNetwork(layers)
+```
+
+To train the model you should pass the loop of train. See a completed sample here:</br>
+By the way I used stochastic gradient descent here but I'll add mini batches later ...</br>
+
+```python
+X_train = [[x1], [x2]]
+Y_train = [[y1], [y2]]
+
+for epoch in range(epochs):
+    for x, y_true in zip(X_train, Y_train):
+        y_pred = net(x)
+        net.backward(y_true)
+```
+
+It will absolutely be easier for you to read and run this code if you are familier with mathmatics which is used in a neural network
 
 
 ## 🧑‍💻 Developer
