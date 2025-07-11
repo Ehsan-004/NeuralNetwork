@@ -5,7 +5,6 @@ from core.activations import sigmoid, ReLU
 from core.derivatives import ReLU as d_ReLU
 
 
-
 if __name__ == "__main__":
     
     print("\n=== preprocessing ===\n")
@@ -35,17 +34,18 @@ if __name__ == "__main__":
         
     print("\n=== training ===\n")
     
-    # for epoch in tqdm(range(5000), desc="training"):
-    for epoch in range(600):
+    for epoch in range(150):
         total_loss = 0
-        for x, y_true in zip(X_train, Y_train):
+        total_loss = 0
+        for x, y_true in zip(X_train, Y_train):  # x, y_true are datapoints
             y_pred = net(x)
             net.backward(y_true)
-            loss = sum([(y_true[i] - y_pred[i]) ** 2 for i in range(len(y_true))])
-            total_loss += loss
+            total_loss += net.loss
             
         if epoch % 10 == 0:
             print(f"Epoch {epoch}, Training Loss: {total_loss/len(X_train):.4f}")
+            
+        # nloss = 0
             
             
     print("\n=== validating ===\n")

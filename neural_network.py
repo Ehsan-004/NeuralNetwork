@@ -233,12 +233,15 @@ class NeuralNetwork:
         y_pred = output_layer.activations
         lambdas = []  # will be used as output layer lambdas
         
+        self.loss = 0
         for i in range(len(y_true)):  # i corresponds to each output node (just for one sample of data)
             # for output layer nodes the formula to compute lambda is:
             #   lambda = -2 * error[i] * df(actived[i])
             error = y_true[i] - y_pred[i]  # error
             d_act = output_layer.activation_differ(y_pred[i])  # df(actived[i])
-            landa = -2 * error * d_act
+            landa = -2 * error * d_act  # this is the derivation of loss function with respect to outputs 
+            self.loss += (y_pred[i] - y_true[i]) ** 2
+            # (MSELoss(predict, target) = sum([(t-p)**2) for t, p in zip(predicts, targets)])
             lambdas.append(landa)
         
         output_layer.lambdas = lambdas
@@ -250,13 +253,13 @@ class NeuralNetwork:
             #   n is in next layer | i is in current layer
             l = self.layers[i]
             l_next = self.layers[i+1]  # next layer nodes (the n above coresponds to each node in this layer)
-            l.lambdas = l_next.compute_pre_lambdas(l.activations, l.activation_differ)  # current or previous layer nodes ragarding to our logic
+            l.lambdas = l_next.compute_pre_lambdas(l.activations, l.activation_differ)  # current or previous layer nodes ragarding to our logic | read Layer.compute_pre_lambdas() comments
             # (the i above coresponds to each node in this layer)
             
             # be sure to read doc fot these methods
             gradients = l.compute_grades(l_next.lambdas)
-            l_next.update_weights(gradients)  
-                
+            l_next.update_weights(gradients)
+
 
     def get_weights(self) -> list[list[list[float]]]:
         """
