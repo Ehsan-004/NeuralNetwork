@@ -231,6 +231,10 @@ class NeuralNetwork:
         self.layers = layers
         self.loss_type = loss
         self.input_layer = AbstractInputLayer(layers[0].input_neurons_num)
+        self.gradents = [None for _ in range(len(self.layers))]  # 1 for abstract input layer
+        
+        # print(f"g is: {self.gradents}")
+        # self.gradents = []
         
         # if you want to have the same lr for all layers then uncomment this and add lr as an arg!
         # self.lr = lr
@@ -279,6 +283,8 @@ class NeuralNetwork:
         lambdas = [0 for  _ in range(len(y_true))]  # will be used as output layer lambdas
         
         self.loss = 0
+        
+        # calculate lambda for output layer
         for i in range(len(y_true)):  # i corresponds to each output node (just for one sample of data)
             if self.loss_type == "mse":
                 # for output layer nodes the formula to compute lambda is:
@@ -293,18 +299,38 @@ class NeuralNetwork:
             elif self.loss_type == "cce":
                 y_pred_one_hot = to_one_hot(y_pred)
                 self.loss += CCE(y_true, y_pred_one_hot)
+                # the formula to calculate dl/dw for CCE is:
+                #   dCCE/dw = predicted_for_node[i] - target_for_node[i]
                 lambdas[i] = y_pred[i] - y_true[i]
                 
-        
+                
         output_layer.lambdas = lambdas
+
+                
+        # print(self.gradents)
+        # print()
         
-        # output layer update
-        gradients = self.layers[-2].compute_grades(output_layer.lambdas)
-        output_layer.update_weights(gradients)
+        # updating output layer weights
+        output_gradients = self.layers[-2].compute_grades(output_layer.lambdas)
         
-        # hidden layers update
+        
+        # print(f"I'm trying to get the index {len(self.layers) - 1}")
+        self.gradents[len(self.layers) - 1] = output_gradients
+        
+        # x = 1
+        # print(f"seri {x}")
+        # print(f"from {len(output_gradients[0])} -> {len(output_gradients)}")
+        # print(output_gradients)
+        # print(self.gradents)
+        # print()
+        # x += 1
+        
+        # output_layer.update_weights(output_gradients)  # =============================================================================
+        
+        # updating hidden layers' weights
         for i in range(len(self.layers)-2, -1, -1):  # for each layer in nn (from end to start except last layer)
-            # -2 because the last layer is output and has a different formula
+            # print(f"now i is:{i}")
+            # -1 because the last layer is output and has a different formula (and another -1 for indexing in python)
             # for hidde layer nodes the formula to compute lambda is:
             #   lambda[i] = sum(lambda[n] * df(actived[i]) * weights[i -> n])
             #   n is in next layer | i is in current layer
@@ -314,12 +340,48 @@ class NeuralNetwork:
             # (the i above coresponds to each node in this layer)
             # be sure to read doc fot these methods
             gradients = current_layer.compute_grades(next_layer.lambdas)
-            next_layer.update_weights(gradients)
+            
+            self.gradents[i+1] = gradients
+            
+            # print(f"{len(current_layer.neurons)} ===> {len(next_layer.neurons)}")
+            
+            # print(f"seri {x}")
+            # print(f"from {len(gradients[0])} -> {len(gradients)}")
+            # print(gradients)
+            # print(self.gradents)
+            # print()
+            # x += 1
+            # next_layer.update_weights(gradients)  # =============================================================================
 
-        # first hidden layer weights are not updated
-        # TODO: what should I do???
-        gradients = self.input_layer.compute_grades(self.layers[0].lambdas)
-        self.layers[0].update_weights(gradients)
+        # updating first layer weights
+        first_hidden_gradients = self.input_layer.compute_grades(self.layers[0].lambdas)
+        self.gradents[0] = first_hidden_gradients
+        # print(f"seri {x}")
+        # print(f"from {len(first_hidden_gradients[0])} -> {len(first_hidden_gradients)}")
+        # print(first_hidden_gradients)
+        # print(self.gradents)
+        # print()
+        # x += 1
+        
+        # self.layers[0].update_weights(first_hidden_gradients) # =============================================================================
+
+
+    def step(self):
+        # print("0---------------------------0")
+        # for gr in self.gradents:
+        #     print(f"from {len(gr)} to {len(gr[0])}")
+        #     print()
+        
+        # for i in range(len(self.gradents)):
+        #     print(f"this is gradient for weights from layer with {len(self.gradents[i][0])} to {len(self.gradents[i])}")
+        # exit()
+        
+        # g = list(reversed(self.gradents))
+        for i in range(len(self.layers)):
+            self.layers[i].update_weights(self.gradents[i])
+            # self.layers[i+1].update_weights(g[i])
+        self.gradents = [None for _ in range(len(self.layers) )]
+
 
     def get_weights(self) -> list[list[list[float]]]:
         """

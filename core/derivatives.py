@@ -23,6 +23,9 @@ def ReLU(A):
         return 0 if A<0 else 1
 
 
+# def CCE()
+
+
 
 def d_l_w_linear(x, y_predicted, y_true):
     return -2 * ((sum((y_true - y_predicted) * x))/len(y_true))
