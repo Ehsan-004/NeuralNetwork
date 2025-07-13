@@ -56,3 +56,13 @@ def linear_classified_data_generator(slope, intercept, n_samples=30000, plot=Fal
 def initialize_weights(num, w=0.1):
     ws = [np.random.randn() * w for i in range(num)]
     return ws
+
+
+def to_one_hot(y_predicted):
+    if isinstance(y_predicted, list):
+        max_ind = y_predicted.index(max(y_predicted))
+        return [0 if i != max_ind else 1 for i in range(len(y_predicted))]
+
+if __name__ == "__main__":
+    a = to_one_hot([0.2, 0.5, 0.3])
+    print(a)

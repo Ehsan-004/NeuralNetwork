@@ -21,10 +21,17 @@ def mse(y_true , y_predicted):
     return np.sum(np.array(squared_errors)) / len(y_true[0]), [list(e) for e in errors]
 
 
-def CCE(y_true, y_predicted):
-    indexes = [x.index(1) for x in y_true]
-    errors = [-np.log(predict[i]) for i, predict in zip(indexes, y_predicted)]
-    return sum(errors) / len(y_true)
+# def CCE(y_true, y_predicted, eps = 1e-5):
+#     print(f"y_true is {y_true}")
+#     print(f"y_predicted is {y_predicted}")
+#     indexes = [x.index(1) for x in y_true]
+#     errors = [-np.log(predict[i]+eps) for i, predict in zip(indexes, y_predicted)]
+#     return sum(errors) / len(y_true)
+
+
+def CCE(y_true, y_predicted, eps = 1e-5):  # these are outputs from net and true output (one sample)
+    index = y_true.index(1)
+    return -np.log(y_predicted[index] + eps)
     
     
 def calculate_mse(predictions, targets):
@@ -33,5 +40,7 @@ def calculate_mse(predictions, targets):
 
 
 if __name__ == "__main__":
-    print(calculate_mse([1,2,3], [2,4,6]))
-    print(msq([1,2,3], [2,4,6]))
+    # print(calculate_mse([1,2,3], [2,4,6]))
+    # print(msq([1,2,3], [2,4,6]))
+    print(CCE([[1,0,0]], [[0,0,1]]))
+    print(CCE([[1,0,0]], [[1,0,0]]))

@@ -29,7 +29,7 @@ def ReLU(x: list):
 def softmax(X): 
     s = sum(list(map(lambda i: np.exp(i), X)))
     
-    result = [(np.exp(i))/s for i in X]
+    result = [(np.exp(i))/(s + 1e-8) for i in X]
         
     return list(map(lambda i: float(i), result))
         
