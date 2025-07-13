@@ -1,5 +1,8 @@
+from pprint import pprint
 from core.tools import initialize_weights
+from core.loss import CCE
 from typing import Callable
+from core.tools import to_one_hot
 
 
 class Neuron:
@@ -116,12 +119,12 @@ class Layer:
         # current layer has len(self.neurons) neurons.  corresponded by c
         # previous layer has self.input_neurons nuerons.  corresponded by i
     
-        for c in range(len(self.neurons)):  # c for current layer neurons
+        for i in range(self.input_neurons_num):  # i for previous layer neurons
             temp_landa = 0
-            for i in range(self.input_neurons_num):  # i for previous layer neurons
+            for c in range(len(self.neurons)):  # c for current layer neurons
                 temp_landa += landas[c] * weights[c][i] * previous_activation_diff(previous_activations[i])
                 
-                previous_lambdas.append(temp_landa)  # I don't remove this comment. I spend some days looking for this mistake 
+            previous_lambdas.append(temp_landa)
                 # the line above didn't have the necessary indent and was a tab further back
             
         # ---------- important ---------- #
@@ -131,6 +134,7 @@ class Layer:
     def compute_grades(self, next_layer_lambdas: list) ->list[list[float]]:
         """
         calculates gradients for weights between current layer and next layer
+        (actually the next layer weights because weights belong to layer they go throug)
         they will be used to update weights in Layet.update_weights()
         
         args:
@@ -180,19 +184,53 @@ class Layer:
         return out
 
 
+class AbstractInputNeuron:
+    def __init__(self):
+        pass
+        
+    def forward(self, x: list) -> float:
+        return x
+           
+    def __call__(self, x):
+        return self.forward(x)
+
+
+class AbstractInputLayer:
+    def __init__(self,  neuron_num: int, lr=0.1):
+        self.neurons = [AbstractInputNeuron() for _ in range(neuron_num)]
+        self.activations = []
+        self.lr = lr
+    
+    def forward(self, x):
+        self.activations = x
+        return x
+
+    def compute_grades(self, next_layer_lambdas: list) ->list[list[float]]:
+        next_l_neuron_num = len(next_layer_lambdas)  # first hidden layer gradients
+        gradients = [[0 for __ in range(len(self.neurons))] for _ in range(next_l_neuron_num)]
+        activations = self.activations
+        
+        for c in range(len(self.neurons)):
+            for j in range(next_l_neuron_num):
+                gradients[j][c] = next_layer_lambdas[j] * activations[c]
+                
+        return gradients
 
 class NeuralNetwork:
     """
     This class simulates a NEURAL NETWORK consists of some Layers
     """
-    def __init__(self, layers: list[Layer]):
+    def __init__(self, layers: list[Layer], loss: str = "mse"):
         """
         initializes a Neural Network with specified layers and learning rate
         
         args:
             layers: a list of Layers
+            loss ("mse", "cce"): name of loss function to use
         """
         self.layers = layers
+        self.loss_type = loss
+        self.input_layer = AbstractInputLayer(layers[0].input_neurons_num)
         
         # if you want to have the same lr for all layers then uncomment this and add lr as an arg!
         # self.lr = lr
@@ -212,6 +250,8 @@ class NeuralNetwork:
         if len(x) != self.layers[0].input_neurons_num:
             raise ValueError(f"x must have len {self.layers[0].input_neurons_num} but got len {len(x)}")
         
+        self.input_layer.forward(x)
+        
         for layer in self.layers:
             x = layer.forward(x)
         return x
@@ -225,41 +265,61 @@ class NeuralNetwork:
         
         args:
             y_true: target output of data sample. must be a list
+            
+        note:
+            if you want to solve a binary class problem use "mse" loss
+            if you want to solve a classification problem with more than two classes, use "cce" loss. 
+            y_true in "cce" loss must be a ONE-HOT list 
         """
         # for each output neuron:
         #   landa = -2 * error * activation_diff(neuron activation)
         
         output_layer = self.layers[-1]  # this is the last layer and has a different method to compute gradients
         y_pred = output_layer.activations
-        lambdas = []  # will be used as output layer lambdas
+        lambdas = [0 for  _ in range(len(y_true))]  # will be used as output layer lambdas
         
         self.loss = 0
         for i in range(len(y_true)):  # i corresponds to each output node (just for one sample of data)
-            # for output layer nodes the formula to compute lambda is:
-            #   lambda = -2 * error[i] * df(actived[i])
-            error = y_true[i] - y_pred[i]  # error
-            d_act = output_layer.activation_differ(y_pred[i])  # df(actived[i])
-            landa = -2 * error * d_act  # this is the derivation of loss function with respect to outputs 
-            self.loss += (y_pred[i] - y_true[i]) ** 2
-            # (MSELoss(predict, target) = sum([(t-p)**2) for t, p in zip(predicts, targets)])
-            lambdas.append(landa)
+            if self.loss_type == "mse":
+                # for output layer nodes the formula to compute lambda is:
+                #   lambda = -2 * error[i] * df(actived[i])
+                error = y_true[i] - y_pred[i]  # error
+                self.loss += error ** 2
+                d_act = output_layer.activation_differ(y_pred[i])  # df(actived[i])
+                landa = -2 * error * d_act  # this is the derivation of loss function with respect to outputs 
+                # (MSELoss(predict, target) = sum([(t-p)**2) for t, p in zip(predicts, targets)])
+                # lambdas.append(landa)
+                lambdas[i] = landa
+            elif self.loss_type == "cce":
+                y_pred_one_hot = to_one_hot(y_pred)
+                self.loss += CCE(y_true, y_pred_one_hot)
+                lambdas[i] = y_pred[i] - y_true[i]
+                
         
         output_layer.lambdas = lambdas
         
-        for i in range(len(self.layers)-2, -1, -1):  # for each layer in nn (from end to start)
+        # output layer update
+        gradients = self.layers[-2].compute_grades(output_layer.lambdas)
+        output_layer.update_weights(gradients)
+        
+        # hidden layers update
+        for i in range(len(self.layers)-2, -1, -1):  # for each layer in nn (from end to start except last layer)
             # -2 because the last layer is output and has a different formula
             # for hidde layer nodes the formula to compute lambda is:
             #   lambda[i] = sum(lambda[n] * df(actived[i]) * weights[i -> n])
             #   n is in next layer | i is in current layer
-            l = self.layers[i]
-            l_next = self.layers[i+1]  # next layer nodes (the n above coresponds to each node in this layer)
-            l.lambdas = l_next.compute_pre_lambdas(l.activations, l.activation_differ)  # current or previous layer nodes ragarding to our logic | read Layer.compute_pre_lambdas() comments
+            current_layer = self.layers[i]
+            next_layer = self.layers[i+1]  # next layer nodes (the n above coresponds to each node in this layer)
+            current_layer.lambdas = next_layer.compute_pre_lambdas(current_layer.activations, current_layer.activation_differ)  # current or previous layer nodes ragarding to our logic | read Layer.compute_pre_lambdas() comments
             # (the i above coresponds to each node in this layer)
-            
             # be sure to read doc fot these methods
-            gradients = l.compute_grades(l_next.lambdas)
-            l_next.update_weights(gradients)
+            gradients = current_layer.compute_grades(next_layer.lambdas)
+            next_layer.update_weights(gradients)
 
+        # first hidden layer weights are not updated
+        # TODO: what should I do???
+        gradients = self.input_layer.compute_grades(self.layers[0].lambdas)
+        self.layers[0].update_weights(gradients)
 
     def get_weights(self) -> list[list[list[float]]]:
         """
