@@ -13,12 +13,54 @@ def msq(y_true , y_predicted):
     return (sum((y_true - y_predicted)**2)) / len(y_true)
 
 
+class Loss:
+    def __init__(self):
+        pass
+    
+    def compute_loss(self):
+        pass
+    
+    def __call__(self, y_true, y_pred):
+        return self.compute_loss(y_true, y_pred)
+    
+
+class MSELoss(Loss):
+    def __init__(self):
+        pass
+    
+    def compute_loss(self, y_true , y_pred):
+        error = y_true - y_pred
+        self.error = error
+        return error ** 2
+    
+
+class CCELoss(Loss):
+    def __init__(self, eps = 1e-5):
+        super().__init__()
+        self.eps = eps
+        
+    def compute_loss(self, y_true, y_predicted):
+        index = y_true.index(1)
+        return -np.log(y_predicted[index] + self.eps)
+    
+    @staticmethod
+    def to_one_hot(y_predicted):
+        if isinstance(y_predicted, list):
+            max_ind = y_predicted.index(max(y_predicted))
+            return [0 if i != max_ind else 1 for i in range(len(y_predicted))]
+
+
 # This functions has been used in neural network
 def mse(y_true , y_predicted):
-    y_true, y_predicted = np.array(y_true), np.array(y_predicted)
-    errors = [a-b for a, b in zip(y_true, y_predicted)]
-    squared_errors = [a**2 for a in errors]
-    return np.sum(np.array(squared_errors)) / len(y_true[0]), [list(e) for e in errors]
+    if isinstance(y_true, (list, np.array)):
+        y_true, y_predicted = np.array(y_true), np.array(y_predicted)
+        errors = [a-b for a, b in zip(y_true, y_predicted)]
+        squared_errors = [a**2 for a in errors]
+        return np.sum(np.array(squared_errors)) / len(y_true[0]), [list(e) for e in errors]
+    
+    elif isinstance(y_true, (float, int)):
+        error = y_true - y_predicted  # error
+        return error ** 2
 
 
 # def CCE(y_true, y_predicted, eps = 1e-5):

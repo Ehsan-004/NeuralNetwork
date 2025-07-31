@@ -1,8 +1,8 @@
 from pprint import pprint
 from core.tools import initialize_weights
-from core.loss import CCE
+from core.loss import CCELoss
 from typing import Callable
-from core.tools import to_one_hot
+from core.loss import mse, MSELoss
 
 
 class Neuron:
@@ -69,6 +69,7 @@ class Layer:
             w: weight for initialize the weighs and bias for each neuron. change it according to layer position
             lr: learning rate for this layer
         """
+        
         self.neurons = [Neuron(input_neurons, w=w) for _ in range(neuron_num)]  # initialize neurons
         self.input_neurons_num = input_neurons
         self.activation = activation
@@ -77,7 +78,6 @@ class Layer:
         self.activations = []  # this is actually outputs of this layer after passing from activation function. will be used to update weights.
         self.lr = lr
         
-    
     
     def forward(self, x: list) -> list:
         """
@@ -231,7 +231,12 @@ class NeuralNetwork:
         self.layers = layers
         self.loss_type = loss
         self.input_layer = AbstractInputLayer(layers[0].input_neurons_num)
-        self.gradents = [None for _ in range(len(self.layers))]  # 1 for abstract input layer
+        self.gradents = [None for _ in range(len(self.layers))]
+        
+        if loss == "mse":
+            self.loss_object = MSELoss()
+        elif loss == "cce":
+            self.loss_object = CCELoss()
         
         # print(f"g is: {self.gradents}")
         # self.gradents = []
@@ -289,43 +294,28 @@ class NeuralNetwork:
             if self.loss_type == "mse":
                 # for output layer nodes the formula to compute lambda is:
                 #   lambda = -2 * error[i] * df(actived[i])
-                error = y_true[i] - y_pred[i]  # error
-                self.loss += error ** 2
+                loss = self.loss_object(y_true[i], y_pred[i])                
+                self.loss += loss
                 d_act = output_layer.activation_differ(y_pred[i])  # df(actived[i])
-                landa = -2 * error * d_act  # this is the derivation of loss function with respect to outputs 
+                landa = -2 * self.loss_object.error * d_act  # this is the derivation of loss function with respect to outputs 
                 # (MSELoss(predict, target) = sum([(t-p)**2) for t, p in zip(predicts, targets)])
                 # lambdas.append(landa)
                 lambdas[i] = landa
+                
             elif self.loss_type == "cce":
-                y_pred_one_hot = to_one_hot(y_pred)
-                self.loss += CCE(y_true, y_pred_one_hot)
+                y_pred_one_hot = self.loss_object.to_one_hot(y_pred)
+                self.loss += self.loss_object(y_true, y_pred_one_hot)
                 # the formula to calculate dl/dw for CCE is:
                 #   dCCE/dw = predicted_for_node[i] - target_for_node[i]
                 lambdas[i] = y_pred[i] - y_true[i]
-                
-                
+
+
         output_layer.lambdas = lambdas
 
-                
-        # print(self.gradents)
-        # print()
-        
         # updating output layer weights
         output_gradients = self.layers[-2].compute_grades(output_layer.lambdas)
-        
-        
-        # print(f"I'm trying to get the index {len(self.layers) - 1}")
         self.gradents[len(self.layers) - 1] = output_gradients
         
-        # x = 1
-        # print(f"seri {x}")
-        # print(f"from {len(output_gradients[0])} -> {len(output_gradients)}")
-        # print(output_gradients)
-        # print(self.gradents)
-        # print()
-        # x += 1
-        
-        # output_layer.update_weights(output_gradients)  # =============================================================================
         
         # updating hidden layers' weights
         for i in range(len(self.layers)-2, -1, -1):  # for each layer in nn (from end to start except last layer)
@@ -343,43 +333,15 @@ class NeuralNetwork:
             
             self.gradents[i+1] = gradients
             
-            # print(f"{len(current_layer.neurons)} ===> {len(next_layer.neurons)}")
-            
-            # print(f"seri {x}")
-            # print(f"from {len(gradients[0])} -> {len(gradients)}")
-            # print(gradients)
-            # print(self.gradents)
-            # print()
-            # x += 1
-            # next_layer.update_weights(gradients)  # =============================================================================
 
         # updating first layer weights
         first_hidden_gradients = self.input_layer.compute_grades(self.layers[0].lambdas)
         self.gradents[0] = first_hidden_gradients
-        # print(f"seri {x}")
-        # print(f"from {len(first_hidden_gradients[0])} -> {len(first_hidden_gradients)}")
-        # print(first_hidden_gradients)
-        # print(self.gradents)
-        # print()
-        # x += 1
-        
-        # self.layers[0].update_weights(first_hidden_gradients) # =============================================================================
 
 
     def step(self):
-        # print("0---------------------------0")
-        # for gr in self.gradents:
-        #     print(f"from {len(gr)} to {len(gr[0])}")
-        #     print()
-        
-        # for i in range(len(self.gradents)):
-        #     print(f"this is gradient for weights from layer with {len(self.gradents[i][0])} to {len(self.gradents[i])}")
-        # exit()
-        
-        # g = list(reversed(self.gradents))
         for i in range(len(self.layers)):
             self.layers[i].update_weights(self.gradents[i])
-            # self.layers[i+1].update_weights(g[i])
         self.gradents = [None for _ in range(len(self.layers) )]
 
 
@@ -395,4 +357,3 @@ class NeuralNetwork:
     
     def __call__(self, x):
         return self.forward(x)
-
